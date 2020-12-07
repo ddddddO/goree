@@ -82,15 +82,17 @@ func deep(targetDir string, isAll bool, deepLevel, deepCnt int, buf *bytes.Buffe
 				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, buf)
 			}
 		} else {
-			if !strings.HasPrefix(fileName, ".") {
-				row = rowWithEdge(i, maxFileNum, deepCnt, fileName)
-				if err := writeToBuffer(buf, row); err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-				if f.IsDir() {
-					deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, buf)
-				}
+			if strings.HasPrefix(fileName, ".") {
+				continue
+			}
+
+			row = rowWithEdge(i, maxFileNum, deepCnt, fileName)
+			if err := writeToBuffer(buf, row); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			if f.IsDir() {
+				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, buf)
 			}
 		}
 	}
