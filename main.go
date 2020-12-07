@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -30,7 +32,12 @@ func main() {
 		targetDir = args[0]
 	}
 
-	fmt.Println(targetDir)
+	buf := &bytes.Buffer{}
+
+	if err := writeToBuffer(buf, targetDir); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	files, err := ioutil.ReadDir(targetDir)
 	if err != nil {
@@ -45,14 +52,27 @@ func main() {
 		row := ""
 		if isAll {
 			row = rowWithEdge(i, maxFileNum, fileName)
-			fmt.Println(row)
+			if err := writeToBuffer(buf, row); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		} else {
 			if !strings.HasPrefix(fileName, ".") {
 				row = rowWithEdge(i, maxFileNum, fileName)
-				fmt.Println(row)
+				if err := writeToBuffer(buf, row); err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
 			}
 		}
 	}
+
+	io.Copy(os.Stdout, buf)
+}
+
+func writeToBuffer(buf *bytes.Buffer, row string) error {
+	_, err := buf.WriteString(row + "\n")
+	return err
 }
 
 func rowWithEdge(i, maxFileNum int, fileName string) string {
