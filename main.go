@@ -39,35 +39,51 @@ func main() {
 		os.Exit(1)
 	}
 
+	deepCnt := 0
+	deep(targetDir, isAll, deepLevel, deepCnt, buf)
+
+	io.Copy(os.Stdout, buf)
+}
+
+func deep(targetDir string, isAll bool, deepLevel, deepCnt int, buf *bytes.Buffer) {
+	if deepCnt >= deepLevel {
+		return
+	}
+
 	files, err := ioutil.ReadDir(targetDir)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
+	deepCnt++
 	maxFileNum := len(files) - 1
 	for i, f := range files {
 		fileName := f.Name()
 
 		row := ""
 		if isAll {
-			row = rowWithEdge(i, maxFileNum, fileName)
+			row = rowWithEdge(i, maxFileNum, deepCnt, fileName)
 			if err := writeToBuffer(buf, row); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+			if f.IsDir() {
+				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, buf)
+			}
 		} else {
 			if !strings.HasPrefix(fileName, ".") {
-				row = rowWithEdge(i, maxFileNum, fileName)
+				row = rowWithEdge(i, maxFileNum, deepCnt, fileName)
 				if err := writeToBuffer(buf, row); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
+				if f.IsDir() {
+					deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, buf)
+				}
 			}
 		}
 	}
-
-	io.Copy(os.Stdout, buf)
 }
 
 func writeToBuffer(buf *bytes.Buffer, row string) error {
@@ -75,15 +91,24 @@ func writeToBuffer(buf *bytes.Buffer, row string) error {
 	return err
 }
 
-func rowWithEdge(i, maxFileNum int, fileName string) string {
+func rowWithEdge(i, maxFileNum, deepCnt int, fileName string) string {
 	const (
+		space = "   "
+		edge0 = "│" + space
 		edge1 = "├──" + " "
 		edge2 = "└──" + " "
 	)
 
-	if i == maxFileNum {
-		return edge2 + fileName
-	} else {
-		return edge1 + fileName
+	row := ""
+	for i := 1; i < deepCnt; i++ {
+		row += edge0
 	}
+
+	if i == maxFileNum {
+		row += edge2 + fileName
+	} else {
+		row += edge1 + fileName
+	}
+
+	return row
 }
