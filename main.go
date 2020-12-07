@@ -42,7 +42,17 @@ func main() {
 	deepCnt := 0
 	deep(targetDir, isAll, deepLevel, deepCnt, buf)
 
-	io.Copy(os.Stdout, buf)
+	if outFileName == "" {
+		io.Copy(os.Stdout, buf)
+	} else {
+		f, err := os.Create(outFileName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		defer f.Close()
+		io.Copy(f, buf)
+	}
 }
 
 func deep(targetDir string, isAll bool, deepLevel, deepCnt int, buf *bytes.Buffer) {
