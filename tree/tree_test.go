@@ -44,6 +44,36 @@ func TestDeep(t *testing.T) {
 └── .a
 `),
 		},
+		{
+			name:      "success 3",
+			targetDir: testDir,
+			isAll:     true,
+			deepLevel: 3,
+			buf:       &bytes.Buffer{},
+
+			want: genTestTree(`
+├── a
+│   ├── b
+│   │   ├── c
+│   │   └── x
+│   └── .z
+└── .a
+`),
+		},
+		{
+			name:      "success 4",
+			targetDir: testDir,
+			isAll:     false,
+			deepLevel: 3,
+			buf:       &bytes.Buffer{},
+
+			want: genTestTree(`
+└── a
+    └── b
+        ├── c
+        └── x
+`),
+		},
 	}
 
 	for _, tt := range tests {
