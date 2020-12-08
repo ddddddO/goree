@@ -42,17 +42,11 @@ func main() {
 	deepCnt := 0
 	deep(targetDir, isAll, deepLevel, deepCnt, buf)
 
-	if outFileName == "" {
-		io.Copy(os.Stdout, buf)
-	} else {
-		f, err := os.Create(outFileName)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		defer f.Close()
-		io.Copy(f, buf)
+	if err := output(buf, outFileName); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
+
 }
 
 func deep(targetDir string, isAll bool, deepLevel, deepCnt int, buf *bytes.Buffer) {
@@ -123,4 +117,20 @@ func rowWithEdge(i, maxFileNum, deepCnt int, fileName string) string {
 	}
 
 	return row
+}
+
+func output(buf *bytes.Buffer, outFileName string) error {
+	if outFileName == "" {
+		io.Copy(os.Stdout, buf)
+		return nil
+	} else {
+		f, err := os.Create(outFileName)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		io.Copy(f, buf)
+	}
+
+	return nil
 }
