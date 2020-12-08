@@ -19,7 +19,7 @@ func Run(targetDir, outFileName string, isAll bool, deepLevel int) {
 	}
 
 	deepCnt := 0
-	deep(targetDir, isAll, deepLevel, deepCnt, buf)
+	deep(targetDir, isAll, deepLevel, deepCnt, 0, buf)
 
 	if err := output(buf, outFileName); err != nil {
 		fmt.Println(err)
@@ -27,53 +27,54 @@ func Run(targetDir, outFileName string, isAll bool, deepLevel int) {
 	}
 }
 
-func deep(targetDir string, isAll bool, deepLevel, deepCnt int, buf *bytes.Buffer) {
+func deep(targetDir string, isAll bool, deepLevel, deepCnt, parentFileNum int, buf *bytes.Buffer) {
 	if deepCnt >= deepLevel {
 		return
 	}
 
-	files, err := getFiles(targetDir)
+	files, hiddenFileNum, err := getFilesAndHiddenCnt(targetDir)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	deepCnt++
-	maxFileNum := len(files) - 1
+	currentFileNum := len(files)
 	for i, f := range files {
 		fileName := f.Name()
 
 		row := ""
 		if isAll {
-			row = rowWithEdge(i, maxFileNum, deepCnt, fileName)
+			row = rowWithEdge(i, currentFileNum, deepCnt, deepLevel, parentFileNum, fileName)
 			if err := writeToBuffer(buf, row); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 			if f.IsDir() {
-				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, buf)
+				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, currentFileNum, buf)
 			}
 		} else {
 			if strings.HasPrefix(fileName, ".") {
 				continue
 			}
 
-			row = rowWithEdge(i, maxFileNum, deepCnt, fileName)
+			row = rowWithEdge(i, currentFileNum-hiddenFileNum, deepCnt, deepLevel, parentFileNum, fileName)
 			if err := writeToBuffer(buf, row); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 			if f.IsDir() {
-				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, buf)
+				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, currentFileNum-hiddenFileNum, buf)
 			}
 		}
 	}
 }
 
-func getFiles(targetDir string) ([]os.FileInfo, error) {
+// ...
+func getFilesAndHiddenCnt(targetDir string) ([]os.FileInfo, int, error) {
 	files, err := ioutil.ReadDir(targetDir)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var hiddens, nonHiddens, all []os.FileInfo
@@ -86,7 +87,7 @@ func getFiles(targetDir string) ([]os.FileInfo, error) {
 	}
 	all = append(nonHiddens, hiddens...)
 
-	return all, nil
+	return all, len(hiddens), nil
 }
 
 func writeToBuffer(buf *bytes.Buffer, row string) error {
@@ -94,20 +95,28 @@ func writeToBuffer(buf *bytes.Buffer, row string) error {
 	return err
 }
 
-func rowWithEdge(i, maxFileNum, deepCnt int, fileName string) string {
+func rowWithEdge(i, targetFileNum, deepCnt, deepLevel, parentFileNum int, fileName string) string {
 	const (
-		space = "   "
-		edge0 = "│" + space
+		four  = "    "
+		three = "   "
+		edge0 = "│" + three
 		edge1 = "├──" + " "
 		edge2 = "└──" + " "
 	)
 
 	row := ""
-	for i := 1; i < deepCnt; i++ {
-		row += edge0
+	if targetFileNum == 1 || parentFileNum == 1 {
+		for i := 1; i < deepCnt; i++ {
+			row += four
+		}
+	} else {
+		for i := 1; i < deepCnt; i++ {
+			row += edge0
+		}
 	}
 
-	if i == maxFileNum {
+	// ...
+	if (i == targetFileNum-1 && deepCnt != deepLevel) || (i == targetFileNum && deepCnt == deepLevel) || (i == targetFileNum-1 && deepCnt == deepLevel) {
 		row += edge2 + fileName
 	} else {
 		row += edge1 + fileName
