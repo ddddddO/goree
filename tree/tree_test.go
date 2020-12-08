@@ -26,8 +26,8 @@ func TestDeep(t *testing.T) {
 			buf:       &bytes.Buffer{},
 
 			want: genTestTree(`
-├── .a
-└── a
+├── a
+└── .a
 `),
 		},
 		{
