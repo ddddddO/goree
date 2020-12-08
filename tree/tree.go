@@ -32,7 +32,7 @@ func deep(targetDir string, isAll bool, deepLevel, deepCnt int, buf *bytes.Buffe
 		return
 	}
 
-	files, err := ioutil.ReadDir(targetDir)
+	files, err := getFiles(targetDir)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -68,6 +68,25 @@ func deep(targetDir string, isAll bool, deepLevel, deepCnt int, buf *bytes.Buffe
 			}
 		}
 	}
+}
+
+func getFiles(targetDir string) ([]os.FileInfo, error) {
+	files, err := ioutil.ReadDir(targetDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var hiddens, nonHiddens, all []os.FileInfo
+	for _, f := range files {
+		if strings.HasPrefix(f.Name(), ".") {
+			hiddens = append(hiddens, f)
+		} else {
+			nonHiddens = append(nonHiddens, f)
+		}
+	}
+	all = append(nonHiddens, hiddens...)
+
+	return all, nil
 }
 
 func writeToBuffer(buf *bytes.Buffer, row string) error {
