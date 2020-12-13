@@ -105,7 +105,11 @@ func rowWithEdge(i, targetFileNum, deepCnt, deepLevel, parentFileNum int, fileNa
 	)
 
 	row := ""
-	if targetFileNum == 1 || parentFileNum == 1 {
+	if targetFileNum == 1 && parentFileNum > 1 {
+		for i := 1; i < deepCnt; i++ {
+			row += edge0
+		}
+	} else if targetFileNum == 1 || parentFileNum == 1 {
 		for i := 1; i < deepCnt; i++ {
 			row += four
 		}

@@ -75,6 +75,7 @@ func TestDeep(t *testing.T) {
 `),
 		},
 		{
+			// FIXME: memo: 親ディレクトリが最後尾のディレクトリであるかチェックして枝を作るよう分岐が必要そう(rowWithEdge)
 			name:      "success 5",
 			targetDir: testDir,
 			isAll:     true,
