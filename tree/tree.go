@@ -131,8 +131,7 @@ func rowWithEdge(i, targetFileNum, deepCnt, deepLevel, parentFileNum int, isEndP
 		}
 	}
 
-	// ...
-	if (i == targetFileNum-1 && deepCnt != deepLevel) || (i == targetFileNum && deepCnt == deepLevel) || (i == targetFileNum-1 && deepCnt == deepLevel) {
+	if i == targetFileNum-1 || (i == targetFileNum && deepCnt == deepLevel) {
 		row += edge2 + fileName
 	} else {
 		row += edge1 + fileName
