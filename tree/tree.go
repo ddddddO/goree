@@ -33,7 +33,7 @@ func deep(targetDir string, isAll bool, deepLevel, deepCnt, parentFileNum int, i
 		return
 	}
 
-	files, hiddenFileNum, err := getFilesAndHiddenCnt(targetDir)
+	files, hiddens, _, err := getFiles(targetDir)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -60,24 +60,24 @@ func deep(targetDir string, isAll bool, deepLevel, deepCnt, parentFileNum int, i
 				continue
 			}
 
-			row = rowWithEdge(i, currentFileNum-hiddenFileNum, deepCnt, deepLevel, parentFileNum, isEndParentFile, fileName)
+			row = rowWithEdge(i, currentFileNum-len(hiddens), deepCnt, deepLevel, parentFileNum, isEndParentFile, fileName)
 			if err := writeToBuffer(buf, row); err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 			if f.IsDir() {
 				isEndFile := i == len(files)-1
-				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, currentFileNum-hiddenFileNum, isEndFile, buf)
+				deep(targetDir+"/"+fileName, isAll, deepLevel, deepCnt, currentFileNum-len(hiddens), isEndFile, buf)
 			}
 		}
 	}
 }
 
 // ...
-func getFilesAndHiddenCnt(targetDir string) ([]os.FileInfo, int, error) {
+func getFiles(targetDir string) ([]os.FileInfo, []os.FileInfo, []os.FileInfo, error) {
 	files, err := ioutil.ReadDir(targetDir)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, nil, err
 	}
 
 	var hiddens, nonHiddens, all []os.FileInfo
@@ -90,7 +90,7 @@ func getFilesAndHiddenCnt(targetDir string) ([]os.FileInfo, int, error) {
 	}
 	all = append(nonHiddens, hiddens...)
 
-	return all, len(hiddens), nil
+	return all, hiddens, nonHiddens, nil
 }
 
 func writeToBuffer(buf *bytes.Buffer, row string) error {
