@@ -55,7 +55,8 @@ func TestDeep(t *testing.T) {
 ├── a
 │   ├── b
 │   │   ├── c
-│   │   └── x
+│   │   ├── x
+│   │   └── z
 │   └── .z
 └── .a
 `),
@@ -71,7 +72,8 @@ func TestDeep(t *testing.T) {
 └── a
     └── b
         ├── c
-        └── x
+        ├── x
+        └── z
 `),
 		},
 		{
@@ -86,9 +88,11 @@ func TestDeep(t *testing.T) {
 │   ├── b
 │   │   ├── c
 │   │   │   └── d
-│   │   └── x
-│   │       ├── X
-│   │       └── y
+│   │   ├── x
+│   │   │   ├── X
+│   │   │   └── y
+│   │   └── z
+│   │       └── w
 │   └── .z
 └── .a
 `),
