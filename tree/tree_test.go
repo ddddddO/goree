@@ -75,7 +75,6 @@ func TestDeep(t *testing.T) {
 `),
 		},
 		{
-			// FIXME: memo: 親ディレクトリが最後尾のディレクトリであるかチェックして枝を作るよう分岐が必要そう(rowWithEdge)
 			name:      "success 5",
 			targetDir: testDir,
 			isAll:     true,
@@ -100,7 +99,7 @@ func TestDeep(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			deep(tt.targetDir, tt.isAll, tt.deepLevel, 0, 0, tt.buf)
+			deep(tt.targetDir, tt.isAll, tt.deepLevel, 0, 0, false, tt.buf)
 			got := tt.buf.String()
 			if got != tt.want {
 				t.Errorf("\nwant: \n%s\ngot: \n%s\n", tt.want, got)
